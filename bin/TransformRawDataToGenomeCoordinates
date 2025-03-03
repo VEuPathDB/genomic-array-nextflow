@@ -11,10 +11,11 @@ use Bio::DB::Sam;
 use List::Util qw(sum);
 
 
-my ($outputFile,$inputFile,$verbose, $probesBamFile);
+my ($outputFile,$inputFile,$verbose, $probesBamFile, $assayType);
 &GetOptions("inputFile=s" => \$inputFile,
             "verbose!" => \$verbose,
             "probesBamFile=s" => \$probesBamFile,
+            "assayType=s" => \$assayType,
             "outputFile=s" => \$outputFile);
 
 
@@ -42,13 +43,13 @@ foreach my $alignment (@alignments) {
   my $sequenceSourceId = $alignment->seq_id;
   next unless (defined $sequenceSourceId);
 
-  my $start = $alignment->start + 1; # adjust because BAM is zero based
+  my $start = $alignment->start + 1 ; # adjust because BAM is zero based
+  my $end = $alignment->end;
 
-  my $key = "$sequenceSourceId\t$start";
+  my $key = $assayType eq 'chipchip' ? "$sequenceSourceId\t$start" : "$sequenceSourceId\t$start\t$end" ;
 
   push @{$probeLocations{$key}}, $probeId;
 
-#  print FILE join("\t", $sequenceSourceId, $start, $end, $name, $score) . "\n";
 }
 
 

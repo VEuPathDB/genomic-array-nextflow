@@ -1,6 +1,9 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
 
+include { rawToGenomeCoordinates } from '../modules/local/rawToGenomeCoordinates.nf'
+include { wiggleResults } from '../modules/local/wiggleResults.nf'
+
 workflow CHIPCHIP {
     take:
     samples
@@ -13,46 +16,36 @@ workflow CHIPCHIP {
 
     peakResults(peakFinderAndSmoother.out)
 
-    smoothedResults(peakFinderAndSmoother.out)
+    adjustedTuple = peakFinderAndSmoother.out.map { meta, smoothed, peaks ->
+        tuple (meta, smoothed)
+    }
+
+    wiggleResults(adjustedTuple)
 
     peakResults.out.studyConfig.collectFile(name: "insert_study_results", storeDir: params.outDir, keepHeader: true, skip: 1)
     
-}
-
-process rawToGenomeCoordinates {
-    container "jbrestel/bioperl"
-
-    input:
-    tuple val(meta), path(chipChipFile)
-
-    output:
-    tuple val(meta), path("genomeCoords.txt")
-
-    script:
-    """
-    TransformRawDataToGenomeCoordinates  --inputFile ${params.input}/${chipChipFile} \\
-                                         --outputFile genomeCoords.txt \\
-                                         --probesBamFile '${params.platformBamFile}'
-    """
 }
 
 
 process peakFinderAndSmoother {
     container "jbrestel/genomicarray"
 
+    publishDir params.outDir, mode: 'copy', pattern: "*.peaks"
 
     input:
     tuple val(meta), path(genomeCoordinates)
 
     output:
-    tuple val(meta), path("reformatted_smoothed.txt"), path("reformatted_peaks.txt")
+    tuple val(meta), path("reformatted_smoothed_noheader.txt"), path("*.peaks")
 
     script:
     """
     java -Xmx2000m -classpath /app/ChIPChipPeakFinder.jar org.apidb.ggtools.array.ChIP_Chip_Peak_Finder $genomeCoordinates  peaks.txt smoothed.txt ${params.peakFinderArgs}
 
-    reformatPeaks.pl  --inputFile peaks.txt --outputFile reformatted_peaks.txt
+    reformatPeaks.pl  --inputFile peaks.txt --outputFile ${meta.id}.peaks
+
     reformatSmoothedProfiles.pl --inputFile smoothed.txt --outputFile reformatted_smoothed.txt
+    tail -n +2 reformatted_smoothed.txt > reformatted_smoothed_noheader.txt
     """
 }
 
@@ -62,7 +55,7 @@ process peakResults {
 
     publishDir params.outDir, mode: 'copy', pattern: "*.gz"
     publishDir params.outDir, mode: 'copy', pattern: "*.tbi"
-    publishDir params.outDir, mode: 'copy', pattern: "*.txt"
+
 
     input:
     tuple val(meta), path(smoothed), path(peaks)
@@ -84,23 +77,3 @@ process peakResults {
 
 }
 
-process smoothedResults {
-    container 'quay.io/biocontainers/ucsc-bedgraphtobigwig:469--h9b8f530_0'
-
-    publishDir params.outDir, mode: 'copy', pattern: "*.bw"
-
-    input:
-    tuple val(meta), path(smoothed), path(peaks)
-
-
-    output:
-    tuple val(meta), path("*.bw")
-
-    script:
-    """
-
-    cat $smoothed | tail -n +2 | sort -k1,1 -k2,2n >smoothed.bed
-    bedGraphToBigWig smoothed.bed ${params.seqSizeFile} ${meta.id}_smoothed.bw
-    """
-
-}

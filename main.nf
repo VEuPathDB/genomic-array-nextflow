@@ -3,7 +3,7 @@
 nextflow.enable.dsl = 2
 
 include { CHIPCHIP  } from './workflows/chipChip.nf'
-//include { CGH  } from './workflows/cgh.nf'
+include { CGH  } from './workflows/cgh.nf'
 
 workflow {
 
@@ -19,9 +19,10 @@ workflow {
         CHIPCHIP(samples);
     }
 
-//    if(params.assayType == "cgh") {
-//        CGH();
-//    }
+    if(params.assayType == "cgh") {
+        CGH(samples);
+    }
+
 
 
 }
