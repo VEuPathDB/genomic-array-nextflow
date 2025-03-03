@@ -1,0 +1,65 @@
+#!/usr/bin/perl
+
+use strict;
+
+use lib "$ENV{GUS_HOME}/lib/perl";
+
+use Getopt::Long;
+
+use Bio::DB::Sam;
+
+use List::Util qw(sum);
+
+
+my ($outputFile,$inputFile,$verbose, $probesBamFile);
+&GetOptions("inputFile=s" => \$inputFile,
+            "verbose!" => \$verbose,
+            "probesBamFile=s" => \$probesBamFile,
+            "outputFile=s" => \$outputFile);
+
+
+open (TABFILE, "$inputFile") or die "Cannot open file for reading:  $!";;
+
+my %scoreHash;
+my %probeLocations;
+
+while (<TABFILE>){
+  chomp;
+  my ($probeId, $score)= split(/\t/, $_);
+  if($probeId){
+    $scoreHash{$probeId} = $score;
+  }
+}
+close(TABFILE);
+open(FILE, "> $outputFile") or die "Cannot open file for writing:  $!";
+
+
+my $bam = Bio::DB::Sam->new(-bam => $probesBamFile);
+my @alignments = $bam->features();
+
+foreach my $alignment (@alignments) {
+  my $probeId = $alignment->query->name;
+  my $sequenceSourceId = $alignment->seq_id;
+  next unless (defined $sequenceSourceId);
+
+  my $start = $alignment->start + 1; # adjust because BAM is zero based
+
+  my $key = "$sequenceSourceId\t$start";
+
+  push @{$probeLocations{$key}}, $probeId;
+
+#  print FILE join("\t", $sequenceSourceId, $start, $end, $name, $score) . "\n";
+}
+
+
+foreach my $key (keys %probeLocations) {
+
+  my @scores = map { $scoreHash{$_}} @{$probeLocations{$key}};
+
+  my $score  = sum(@scores) / scalar(@scores);
+
+  print FILE $key . "\t" . $score . "\n";
+}
+
+close FILE;
+
