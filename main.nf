@@ -15,11 +15,11 @@ workflow {
         return [ [id: row[0] ], fileName ]
     }
 
-    if(params.assayType == "chipchip") {
+    if(params.assayType == "chipChip") {
         CHIPCHIP(samples);
     }
 
-    if(params.assayType == "cgh") {
+    if(params.assayType == "cghArray") {
         CGH(samples);
     }
 
