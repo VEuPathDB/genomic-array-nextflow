@@ -28,7 +28,9 @@ workflow CHIPCHIP {
 
 
 process peakFinderAndSmoother {
-    container "jbrestel/genomicarray"
+
+    // TODO:  Make a veupath version of this from Dockerfile in this repo
+    container 'docker.io/jbrestel/genomicarray:latest'
 
     publishDir params.outDir, mode: 'copy', pattern: "*.peaks"
 
