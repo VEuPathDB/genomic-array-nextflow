@@ -14,7 +14,7 @@ workflow CGH {
     rawToGenomeCoordinates(samples)
 
     bedtoolsMerge(rawToGenomeCoordinates.out)
-    wiggleResults(bedtoolsMerge.out)
+    wiggleResults(bedtoolsMerge.out, params.seqSizeFile)
 
 }
 

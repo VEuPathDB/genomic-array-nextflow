@@ -9,7 +9,7 @@ process wiggleResults {
 
     input:
     tuple val(meta), path(smoothed)
-
+    path(seqSizeFile)
 
     output:
     tuple val(meta), path("*.bw")
@@ -17,7 +17,7 @@ process wiggleResults {
     script:
     """
     cat $smoothed |  sort -k1,1 -k2,2n >smoothed.bed
-    bedGraphToBigWig smoothed.bed ${params.seqSizeFile} ${meta.id}.bw
+    bedGraphToBigWig smoothed.bed $seqSizeFile ${meta.id}.bw
     """
 
 }

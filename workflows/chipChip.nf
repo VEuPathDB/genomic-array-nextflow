@@ -20,7 +20,7 @@ workflow CHIPCHIP {
         tuple (meta, smoothed)
     }
 
-    wiggleResults(adjustedTuple)
+    wiggleResults(adjustedTuple, params.seqSizeFile)
 
     peakResults.out.studyConfig.collectFile(name: "insert_study_results", storeDir: params.outDir, keepHeader: true, skip: 1)
     
