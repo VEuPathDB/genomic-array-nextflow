@@ -2,6 +2,7 @@
 nextflow.enable.dsl = 2
 
 include { rawToGenomeCoordinates } from '../modules/local/rawToGenomeCoordinates.nf'
+include { bedtoolsMerge } from '../modules/local/bedtoolsMerge.nf'
 include { wiggleResults } from '../modules/local/wiggleResults.nf'
 
 workflow CHIPCHIP {
@@ -20,7 +21,8 @@ workflow CHIPCHIP {
         tuple (meta, smoothed)
     }
 
-    wiggleResults(adjustedTuple, params.seqSizeFile)
+    bedtoolsMerge(adjustedTuple)
+    wiggleResults(bedtoolsMerge.out, params.seqSizeFile)
 
     peakResults.out.studyConfig.collectFile(name: "insert_study_results", storeDir: params.outDir, keepHeader: true, skip: 1)
     
