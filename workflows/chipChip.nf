@@ -75,7 +75,7 @@ process peakResults {
     bgzip ${meta.id}_peaks.bed
     tabix -p bed ${meta.id}_peaks.bed.gz
 
-    writeStudyConfig --file ${meta.id}_peaks.txt --outputFile study.config --name '${meta.id}_peaks (ChIP-chip)' --protocol 'chipChipPeaks' --sourceIdType segment --profileSetName '${params.profileSetName}'
+    writeStudyConfig --file ${meta.id}.peaks --outputFile study.config --name '${meta.id}_peaks (ChIP-chip)' --protocol 'chipChipPeaks' --sourceIdType segment --profileSetName '${params.profileSetName}'
 
     """
 
