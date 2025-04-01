@@ -2,7 +2,7 @@
 nextflow.enable.dsl = 2
 
 process rawToGenomeCoordinates {
-    container 'docker.io/veupathdb/bioperl:latest'
+    container 'docker.io/veupathdb/bioperl:1.0.0'
 
     input:
     tuple val(meta), path(inputFile)
