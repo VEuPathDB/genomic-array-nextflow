@@ -30,9 +30,8 @@ workflow CHIPCHIP {
 
 
 process peakFinderAndSmoother {
-
-    // TODO:  Make a veupath version of this from Dockerfile in this repo
-    container 'docker.io/jbrestel/genomicarray:latest'
+    
+    container 'docker.io/veupathdb/genomicarray:1.0.0'
 
     publishDir params.outDir, mode: 'copy', pattern: "*.peaks"
 
@@ -55,7 +54,7 @@ process peakFinderAndSmoother {
 
 
 process peakResults {
-    container = 'biocontainers/tabix:v1.9-11-deb_cv1'
+    container 'biocontainers/tabix:v1.9-11-deb_cv1'
 
     publishDir params.outDir, mode: 'copy', pattern: "*.gz"
     publishDir params.outDir, mode: 'copy', pattern: "*.tbi"

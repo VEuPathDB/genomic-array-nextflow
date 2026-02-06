@@ -46,7 +46,7 @@ foreach my $alignment (@alignments) {
   my $start = $alignment->start + 1 ; # adjust because BAM is zero based
   my $end = $alignment->end;
 
-  my $key = $assayType eq 'chipchip' ? "$sequenceSourceId\t$start" : "$sequenceSourceId\t$start\t$end" ;
+  my $key = lc($assayType) eq 'chipchip' ? "$sequenceSourceId\t$start" : "$sequenceSourceId\t$start\t$end" ;
 
   push @{$probeLocations{$key}}, $probeId;
 
