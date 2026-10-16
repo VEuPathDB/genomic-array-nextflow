@@ -11,7 +11,7 @@ workflow {
         .splitCsv( skip:1)
 
     samples = sampleRows.map { row ->
-        fileName = file(params.input + "/" + row[1]);
+        def fileName = file(params.input + "/" + row[1]);
         return [ [id: row[0] ], fileName ]
     }
 
